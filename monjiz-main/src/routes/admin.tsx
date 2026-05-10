@@ -41,7 +41,7 @@ function AdminPage() {
     pending: 0,
     banned: 0,
   });
-  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
 
@@ -92,8 +92,8 @@ function AdminPage() {
     setLoginError(null);
     setLoading(true);
 
-    if (userName.trim().toLowerCase() !== "admin" || password !== "admin") {
-      setLoginError("Invalid username or password. Use admin / admin.");
+    if (email.trim().toLowerCase() !== "admin@admin.com" || password !== "admin") {
+      setLoginError("Invalid email or password. Use admin@admin.com / admin.");
       setLoading(false);
       return;
     }
@@ -120,14 +120,14 @@ function AdminPage() {
             <h1 className="text-4xl font-black mb-10">Admin sign in</h1>
             <form onSubmit={signInAsAdmin} className="border border-border bg-card p-8 space-y-5">
               <label className="block">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Username</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Email</div>
                 <input
-                  type="text"
+                  type="email"
                   required
                   autoComplete="username"
                   className="mz-input"
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </label>
               <label className="block">
@@ -145,7 +145,7 @@ function AdminPage() {
               <button type="submit" className="w-full px-6 py-3 bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">
                 Sign in →
               </button>
-              <p className="text-sm text-center text-muted-foreground">Use <span className="font-semibold">admin</span> for both username and password.</p>
+              <p className="text-sm text-center text-muted-foreground">Use <span className="font-semibold">admin@admin.com</span> for email and <span className="font-semibold">admin</span> for password.</p>
               <p className="text-sm text-center text-muted-foreground">
                 Or <Link to="/login" className="underline underline-offset-4 text-primary">sign in with your account</Link> if you already have one.
               </p>
