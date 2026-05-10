@@ -9,8 +9,8 @@
     }
   },
   "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-    "VITE_SUPABASE_SERVICE_ROLE_KEY": "@vite_supabase_service_role_key"
+    "VITE_SUPABASE_URL": "https://smywrzfvugidwfqlnxgk.supabase.co/rest/v1/",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteXdyemZ2dWdpZHdmcWxueGdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNzE0MDIsImV4cCI6MjA5Mzk0NzQwMn0.5Ao9L93bHRhshzgsR_WTiP-UvAOs9eFl3xnD_R06x54",
+    "VITE_SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteXdyemZ2dWdpZHdmcWxueGdrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODM3MTQwMiwiZXhwIjoyMDkzOTQ3NDAyfQ.KV2p24MFX1APfOgG-Y9bB1LUNXh3E0c_f8wN_T6dp_w"
   }
 }
