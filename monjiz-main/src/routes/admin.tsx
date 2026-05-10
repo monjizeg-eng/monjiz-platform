@@ -1,5 +1,5 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { FormEvent, useEffect, useState } from "react";
 import { listFreelancersAll } from "@/integrations/data/vercel-api-client";
 import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
@@ -31,7 +31,6 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
@@ -42,6 +41,9 @@ function AdminPage() {
     pending: 0,
     banned: 0,
   });
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const load = async () => {
     try {
@@ -63,7 +65,7 @@ function AdminPage() {
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate({ to: "/login" });
+        setLoading(false);
         return;
       }
 
@@ -83,7 +85,23 @@ function AdminPage() {
       await load();
       setLoading(false);
     })();
-  }, [navigate]);
+  }, []);
+
+  const signInAsAdmin = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setLoading(true);
+
+    if (userName.trim().toLowerCase() !== "admin" || password !== "admin") {
+      setLoginError("Invalid username or password. Use admin / admin.");
+      setLoading(false);
+      return;
+    }
+
+    setAuthorized(true);
+    await load();
+    setLoading(false);
+  };
 
   if (loading) {
     return (
@@ -96,13 +114,44 @@ function AdminPage() {
   if (!authorized) {
     return (
       <Shell>
-        <div className="container-mz py-20 text-center">
-          <h1 className="text-2xl font-bold mb-3">Access Denied</h1>
-          <p className="text-muted-foreground mb-4">You don't have permission to access the admin panel.</p>
-          <Link to="/dashboard" className="underline underline-offset-4">
-            Go to dashboard →
-          </Link>
-        </div>
+        <main className="container-mz py-16 flex-1">
+          <div className="max-w-md mx-auto">
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Admin access</div>
+            <h1 className="text-4xl font-black mb-10">Admin sign in</h1>
+            <form onSubmit={signInAsAdmin} className="border border-border bg-card p-8 space-y-5">
+              <label className="block">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Username</div>
+                <input
+                  type="text"
+                  required
+                  autoComplete="username"
+                  className="mz-input"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+              </label>
+              <label className="block">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Password</div>
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  className="mz-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+              {loginError ? <p className="text-sm text-red-500">{loginError}</p> : null}
+              <button type="submit" className="w-full px-6 py-3 bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">
+                Sign in →
+              </button>
+              <p className="text-sm text-center text-muted-foreground">Use <span className="font-semibold">admin</span> for both username and password.</p>
+              <p className="text-sm text-center text-muted-foreground">
+                Or <Link to="/login" className="underline underline-offset-4 text-primary">sign in with your account</Link> if you already have one.
+              </p>
+            </form>
+          </div>
+        </main>
       </Shell>
     );
   }
