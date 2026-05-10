@@ -58,7 +58,7 @@ function Marketplace() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
-        <section className="border-b border-border" style={{ background: "var(--gradient-warm)" }}>
+        <section className="border-b border-border bg-background">
           <div className="container-mz py-16">
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Directory</div>
             <h1 className="text-4xl sm:text-5xl font-black mb-3">Hire elite talent</h1>

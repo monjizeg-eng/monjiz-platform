@@ -73,7 +73,7 @@ function FreelancerProfile() {
           </div>
         ) : (
           <>
-            <section className="border-b border-border" style={{ background: "var(--gradient-warm)" }}>
+            <section className="border-b border-border bg-background">
               <div className="container-mz py-16 grid md:grid-cols-[240px_1fr] gap-10 items-start">
                 <div className="aspect-square w-full max-w-[240px] bg-background border border-border overflow-hidden">
                   {f.profile_image ? (

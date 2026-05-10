@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 export function AdminQuickReference() {
   return (
-    <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 p-6 rounded-lg mb-8">
+    <div className="bg-card border border-primary/20 p-6 rounded-none mb-8">
       <h3 className="font-bold mb-4 text-lg">Quick Reference</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
         <div>

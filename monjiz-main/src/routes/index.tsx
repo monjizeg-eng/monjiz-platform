@@ -68,23 +68,21 @@ function Index() {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-primary/85" />
-        <div className="absolute inset-0 opacity-[0.08] pointer-events-none"
-             style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.14) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
         <div className="container-mz relative py-24 sm:py-36 text-primary-foreground">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-foreground/10 backdrop-blur border border-primary-foreground/20 text-xs uppercase tracking-widest mb-8">
-              <span className="h-1.5 w-1.5 bg-primary-foreground rounded-full" /> Made in Egypt · صُنع في مصر
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-card border border-primary-foreground/20 text-primary text-xs uppercase tracking-widest mb-8">
+              <span className="h-1.5 w-1.5 bg-primary-foreground" /> Made in Egypt · صُنع في مصر
             </div>
             <h1 dir="rtl" className="font-black text-4xl sm:text-6xl leading-[1.1] mb-10">
               اختار أحسن المنجزين <br/>
               لإنجاز أعمالك عن بُعد
             </h1>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/marketplace" className="group inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary-foreground text-primary font-medium hover:opacity-90 transition">
+              <Link to="/marketplace" className="group inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition">
                 Request a Task
                 <span className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
-              <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-transparent border border-primary-foreground text-primary-foreground font-medium hover:bg-primary-foreground/10 transition">
+              <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-6 py-4 border border-primary text-primary-foreground font-medium hover:bg-white transition">
                 Join as a Freelancer
               </Link>
             </div>
@@ -124,7 +122,7 @@ function Index() {
 
       {/* TOP FREELANCERS */}
       {talents.length > 0 && (
-        <section className="border-y border-border bg-secondary/40">
+        <section className="border-y border-border bg-background">
           <div className="container-mz py-24">
             <div className="flex items-end justify-between mb-12 flex-wrap gap-6">
               <div>
@@ -218,7 +216,7 @@ function Index() {
       </section>
 
       {/* READY CTA */}
-      <section className="border-y border-border" style={{ background: "var(--gradient-warm)" }}>
+      <section className="border-y border-border bg-background">
         <div className="container-mz py-24 text-center">
           <h2 className="text-4xl sm:text-5xl font-black mb-4">Ready to get things done?</h2>
           <p dir="rtl" className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
