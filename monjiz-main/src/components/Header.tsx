@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { supabase } from "@/integrations/supabase-client";
 import logo from "@/assets/monjiz-logo.png";
 
 export function Header() {
@@ -10,16 +10,16 @@ export function Header() {
 
   const checkAdmin = async (userId: string | undefined) => {
     if (!userId) { setIsAdmin(false); return; }
-    const { data } = await localDb.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
     setIsAdmin(!!data);
   };
 
   useEffect(() => {
-    localDb.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
       setAuthed(!!data.session);
       checkAdmin(data.session?.user.id);
     });
-    const { data: sub } = localDb.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setAuthed(!!s);
       checkAdmin(s?.user.id);
     });
@@ -27,7 +27,7 @@ export function Header() {
   }, []);
 
   const logout = async () => {
-    await localDb.auth.signOut();
+    await supabase.auth.signOut();
     navigate({ to: "/" });
   };
 

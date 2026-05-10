@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { getFreelancerByUserId, listProjectsByFreelancer, listClientRequestsByFreelancer, listProjectRequestsByFreelancer } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProjectsManager } from "@/components/ProjectsManager";
@@ -38,20 +39,24 @@ function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await localDb.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate({ to: "/login" }); return; }
-      const { data: f } = await localDb.from("freelancers").select("*").eq("user_id", session.user.id).maybeSingle();
-      setProfile(f as Freelancer | null);
-      if (f) {
-        const [{ data: cr }, { data: pr }, { data: proj }] = await Promise.all([
-          localDb.from("client_requests").select("*").eq("freelancer_id", f.id).order("created_at", { ascending: false }),
-          localDb.from("project_requests").select("*").eq("freelancer_id", f.id).order("created_at", { ascending: false }),
-          localDb.from("projects").select("*").eq("freelancer_id", f.id).order("created_at", { ascending: false }),
-        ]);
-        const all = [...((cr ?? []) as Request[]), ...((pr ?? []) as Request[])]
-          .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
-        setRequests(all);
-        setProjects((proj ?? []) as Project[]);
+      try {
+        const f = await getFreelancerByUserId(session.user.id);
+        setProfile(f);
+        if (f) {
+          const [cr, pr, proj] = await Promise.all([
+            listClientRequestsByFreelancer(f.id),
+            listProjectRequestsByFreelancer(f.id),
+            listProjectsByFreelancer(f.id),
+          ]);
+          const all = [...(cr as Request[]), ...(pr as Request[])]
+            .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+          setRequests(all);
+          setProjects(proj as Project[]);
+        }
+      } catch (error: any) {
+        console.error("Failed to load dashboard data:", error);
       }
       setLoading(false);
     })();

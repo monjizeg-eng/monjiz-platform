@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { localDb } from "@/integrations/data/client";
+import { insertFreelancer } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
@@ -84,7 +85,7 @@ function SignupPage() {
     }
     setLoading(true);
     try {
-      const { data: auth, error } = await localDb.auth.signUp({
+      const { data: auth, error } = await supabase.auth.signUp({
         email: data.email, password: data.password,
         options: { emailRedirectTo: window.location.origin + "/dashboard" },
       });
@@ -96,9 +97,9 @@ function SignupPage() {
         );
       }
 
-      const { data: { session } } = await localDb.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        const { error: signInError } = await localDb.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
@@ -119,7 +120,7 @@ function SignupPage() {
         portfolioUrls.push(url);
       }
 
-      const { error: insErr } = await localDb.from("freelancers").insert({
+      await insertFreelancer({
         user_id: userId,
         name: data.name,
         email: data.email,
@@ -134,7 +135,6 @@ function SignupPage() {
         github: data.github || null,
         status: "active",
       });
-      if (insErr) throw insErr;
 
       toast.success("Welcome to Monjiz!");
       navigate({ to: "/dashboard" });

@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { listFreelancersAll } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FreelancerManagementTable } from "@/components/FreelancerManagementTable";
@@ -43,35 +44,30 @@ function AdminPage() {
   });
 
   const load = async () => {
-    const { data, error } = await localDb
-      .from("freelancers")
-      .select("id,name,email,whatsapp,specialty,status,created_at,bio,portfolio,linkedin,behance,github,profile_image,portfolio_images")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const data = await listFreelancersAll();
+      setFreelancers(data as Freelancer[]);
+      const allData = data as Freelancer[];
+      setStats({
+        total: allData.length,
+        active: allData.filter((f) => f.status === "active").length,
+        pending: allData.filter((f) => f.status === "pending").length,
+        banned: allData.filter((f) => f.status === "banned").length,
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load freelancers");
     }
-
-    setFreelancers((data ?? []) as Freelancer[]);
-    const allData = (data ?? []) as Freelancer[];
-    setStats({
-      total: allData.length,
-      active: allData.filter((f) => f.status === "active").length,
-      pending: allData.filter((f) => f.status === "pending").length,
-      banned: allData.filter((f) => f.status === "banned").length,
-    });
   };
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await localDb.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate({ to: "/login" });
         return;
       }
 
-      const { data: roleRow } = await localDb
+      const { data: roleRow } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id)

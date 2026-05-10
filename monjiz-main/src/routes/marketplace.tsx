@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { localDb, PLACEHOLDER_FREELANCERS } from "@/integrations/data/client";
+import { listFreelancersAll } from "@/integrations/data/vercel-api-client";
+import { PLACEHOLDER_FREELANCERS } from "@/integrations/data/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
@@ -35,16 +36,14 @@ function Marketplace() {
 
   useEffect(() => {
     (async () => {
-      // Auto-fetch freelancers with completed profiles (have a bio)
-      const { data, error } = await localDb
-        .from("freelancers")
-        .select("id,name,specialty,profile_image,bio")
-        .eq("status", "active")
-        .not("bio", "is", null)
-        .order("created_at", { ascending: false });
-      if (error) toast.error(error.message);
-      const rows = (data ?? []) as Freelancer[];
-      setList(rows.length ? rows : PLACEHOLDER_FREELANCERS);
+      try {
+        const data = await listFreelancersAll();
+        const rows = data.filter((f: any) => f.status === "active" && f.bio) as Freelancer[];
+        setList(rows.length ? rows : PLACEHOLDER_FREELANCERS);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load freelancers");
+        setList(PLACEHOLDER_FREELANCERS);
+      }
       setLoading(false);
     })();
   }, []);

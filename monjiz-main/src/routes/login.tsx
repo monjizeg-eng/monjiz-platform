@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { authSignIn } from "@/integrations/data/vercel-api-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
@@ -19,11 +19,15 @@ function LoginPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await localDb.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("Welcome back");
-    navigate({ to: "/dashboard" });
+    try {
+      await authSignIn(email, password);
+      toast.success("Welcome back");
+      navigate({ to: "/dashboard" });
+    } catch (error: any) {
+      toast.error(error.message || "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

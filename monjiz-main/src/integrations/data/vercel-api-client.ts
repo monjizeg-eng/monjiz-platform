@@ -146,3 +146,29 @@ export async function deleteProject(id: string) {
   if (!response.ok) throw new Error("Failed to delete project");
   return response.json();
 }
+
+// ============= Client Request Operations =============
+
+export async function listClientRequestsByFreelancer(freelancerId: string) {
+  const response = await fetch(`${API_BASE}/client-requests?freelancerId=${freelancerId}`);
+  if (!response.ok) throw new Error("Failed to fetch client requests");
+  return response.json();
+}
+
+export async function insertClientRequest(data: Record<string, unknown>) {
+  const response = await fetch(`${API_BASE}/client-requests`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!response.ok) throw new Error("Failed to create client request");
+  return response.json();
+}
+
+// ============= Project Request Operations =============
+
+export async function listProjectRequestsByFreelancer(freelancerId: string) {
+  const response = await fetch(`${API_BASE}/project-requests?freelancerId=${freelancerId}`);
+  if (!response.ok) throw new Error("Failed to fetch project requests");
+  return response.json();
+}

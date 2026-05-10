@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroImg from "@/assets/hero-freelancers.jpg";
 import { useEffect, useState } from "react";
-import { localDb, PLACEHOLDER_FREELANCERS } from "@/integrations/data/client";
+import { listFreelancersAll } from "@/integrations/data/vercel-api-client";
+import { PLACEHOLDER_FREELANCERS } from "@/integrations/data/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -43,15 +44,13 @@ function Index() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await localDb
-        .from("freelancers")
-        .select("id,name,specialty,bio,profile_image")
-        .eq("status", "active")
-        .not("bio", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(3);
-      const rows = (data ?? []) as Talent[];
-      setTalents(rows.length ? rows : PLACEHOLDER_FREELANCERS.slice(0, 3));
+      try {
+        const data = await listFreelancersAll();
+        const rows = data.filter((f: any) => f.status === "active" && f.bio).slice(0, 3) as Talent[];
+        setTalents(rows.length ? rows : PLACEHOLDER_FREELANCERS.slice(0, 3));
+      } catch (error) {
+        setTalents(PLACEHOLDER_FREELANCERS.slice(0, 3));
+      }
     })();
   }, []);
 
