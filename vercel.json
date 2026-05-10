@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "cd monjiz-main && npm install && npm run build",
-  "outputDirectory": "monjiz-main/.vercel/output",
+  "outputDirectory": "monjiz-main/.output",
   "functions": {
     "api/**/*.ts": {
       "memory": 1024,
