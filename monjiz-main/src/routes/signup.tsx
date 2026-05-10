@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { insertFreelancer } from "@/integrations/data/vercel-api-client";
+import { authSignUp, insertFreelancer } from "@/integrations/data/vercel-api-client";
+import { localDb } from "@/integrations/data/monjiz-client";
 import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -85,11 +86,7 @@ function SignupPage() {
     }
     setLoading(true);
     try {
-      const { data: auth, error } = await supabase.auth.signUp({
-        email: data.email, password: data.password,
-        options: { emailRedirectTo: window.location.origin + "/dashboard" },
-      });
-      if (error) throw error;
+      const auth = await authSignUp(data.email, data.password);
       const userId = auth.user?.id;
       if (!userId) {
         throw new Error(

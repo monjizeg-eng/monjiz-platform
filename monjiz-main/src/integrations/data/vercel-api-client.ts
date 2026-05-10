@@ -9,6 +9,14 @@ interface ErrorRef {
   message: string;
 }
 
+async function readJsonOrError(response: Response, fallback: string) {
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    throw new Error(payload?.error || payload?.message || fallback);
+  }
+  return payload;
+}
+
 // ============= Auth Operations =============
 
 export async function authSignUp(email: string, password: string) {
@@ -17,8 +25,7 @@ export async function authSignUp(email: string, password: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "sign-up", email, password }),
   });
-  if (!response.ok) throw new Error("Sign up failed");
-  return response.json();
+  return readJsonOrError(response, "Sign up failed");
 }
 
 export async function authSignIn(email: string, password: string) {
@@ -27,8 +34,7 @@ export async function authSignIn(email: string, password: string) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "sign-in", email, password }),
   });
-  if (!response.ok) throw new Error("Sign in failed");
-  return response.json();
+  return readJsonOrError(response, "Sign in failed");
 }
 
 export async function authSignOut() {
@@ -37,8 +43,7 @@ export async function authSignOut() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "sign-out" }),
   });
-  if (!response.ok) throw new Error("Sign out failed");
-  return response.json();
+  return readJsonOrError(response, "Sign out failed");
 }
 
 export async function authGetSession() {
@@ -47,8 +52,7 @@ export async function authGetSession() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "get-session" }),
   });
-  if (!response.ok) throw new Error("Get session failed");
-  return response.json();
+  return readJsonOrError(response, "Get session failed");
 }
 
 // ============= Freelancer Operations =============
