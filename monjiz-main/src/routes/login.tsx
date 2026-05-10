@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { authSignIn } from "@/integrations/data/vercel-api-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -16,9 +16,17 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    if (email.trim().toLowerCase() === "admin@admin.com" && password === "admin") {
+      toast.success("Welcome admin");
+      navigate({ to: "/admin" });
+      setLoading(false);
+      return;
+    }
+
     try {
       await authSignIn(email, password);
       toast.success("Welcome back");
@@ -52,6 +60,7 @@ function LoginPage() {
             <p className="text-sm text-center text-muted-foreground">
               No account? <Link to="/signup" className="underline underline-offset-4 text-primary">Join Monjiz</Link>
             </p>
+            <p className="text-sm text-center text-muted-foreground">Admin access also works with <span className="font-semibold">admin@admin.com</span> / <span className="font-semibold">admin</span>.</p>
           </form>
         </div>
       </main>
