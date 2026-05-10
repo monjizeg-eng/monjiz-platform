@@ -67,13 +67,13 @@ function Index() {
           height={1024}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-primary/85" />
-        <div className="container-mz relative py-24 sm:py-36 text-primary-foreground">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-card border border-primary-foreground/20 text-primary text-xs uppercase tracking-widest mb-8">
-              <span className="h-1.5 w-1.5 bg-primary-foreground" /> Made in Egypt · صُنع في مصر
+        <div className="absolute inset-0 bg-primary/50" />
+        <div className="container-mz relative py-24 sm:py-36">
+          <div className="max-w-3xl bg-card/95 border border-primary/20 p-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-card border border-primary/20 text-primary text-xs uppercase tracking-widest mb-8">
+              <span className="h-1.5 w-1.5 bg-primary" /> Made in Egypt · صُنع في مصر
             </div>
-            <h1 dir="rtl" className="font-black text-4xl sm:text-6xl leading-[1.1] mb-10">
+            <h1 dir="rtl" className="font-black text-4xl sm:text-6xl leading-[1.1] mb-10 text-primary">
               اختار أحسن المنجزين <br/>
               لإنجاز أعمالك عن بُعد
             </h1>
@@ -82,7 +82,7 @@ function Index() {
                 Request a Task
                 <span className="transition-transform group-hover:translate-x-1">→</span>
               </Link>
-              <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-6 py-4 border border-primary text-primary-foreground font-medium hover:bg-white transition">
+              <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-6 py-4 border border-primary text-primary font-medium hover:bg-background transition">
                 Join as a Freelancer
               </Link>
             </div>
@@ -105,7 +105,7 @@ function Index() {
               key={s.en}
               to="/marketplace"
               search={{ specialty: s.key }}
-              className="bg-background p-8 hover:bg-secondary transition-colors group block"
+              className="bg-card p-8 border border-border hover:bg-secondary transition-colors group block"
             >
               <div className="text-xs text-muted-foreground mb-8">0{i + 1}</div>
               <div className="text-xl font-bold mb-2 group-hover:underline underline-offset-4">{s.en}</div>
