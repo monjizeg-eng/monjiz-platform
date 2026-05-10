@@ -67,9 +67,9 @@ function Index() {
           height={1024}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-primary/70" />
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
-             style={{ backgroundImage: "linear-gradient(var(--ink) 1px, transparent 1px), linear-gradient(90deg, var(--ink) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+        <div className="absolute inset-0 bg-primary/85" />
+        <div className="absolute inset-0 opacity-[0.08] pointer-events-none"
+             style={{ backgroundImage: "linear-gradient(rgba(0,0,0,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.14) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
         <div className="container-mz relative py-24 sm:py-36 text-primary-foreground">
           <div className="max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-foreground/10 backdrop-blur border border-primary-foreground/20 text-xs uppercase tracking-widest mb-8">
