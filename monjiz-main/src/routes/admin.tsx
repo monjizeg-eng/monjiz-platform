@@ -2,6 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { FormEvent, useEffect, useState } from "react";
 import { authSignUp, listFreelancersAll } from "@/integrations/data/vercel-api-client";
 import { supabase } from "@/integrations/supabase-client";
+
+const ADMIN_EMAIL = "admin@admin.com";
+const ADMIN_ALIAS_PASSWORD = "admin";
+const ADMIN_REAL_PASSWORD = "admin123!";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FreelancerManagementTable } from "@/components/FreelancerManagementTable";
@@ -92,17 +96,18 @@ function AdminPage() {
     setLoginError(null);
     setLoading(true);
 
-    if (email.trim().toLowerCase() !== "admin@admin.com" || password !== "admin") {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (trimmedEmail !== ADMIN_EMAIL || password !== ADMIN_ALIAS_PASSWORD) {
       setLoginError("Invalid email or password. Use admin@admin.com / admin.");
       setLoading(false);
       return;
     }
 
     try {
-      await authSignUp(email.trim().toLowerCase(), password);
+      await authSignUp(ADMIN_EMAIL, ADMIN_REAL_PASSWORD);
       const { error } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
+        email: ADMIN_EMAIL,
+        password: ADMIN_REAL_PASSWORD,
       });
       if (error) throw error;
       setAuthorized(true);
@@ -129,7 +134,7 @@ function AdminPage() {
           <div className="max-w-md mx-auto">
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Admin access</div>
             <h1 className="text-4xl font-black mb-10">Admin sign in</h1>
-            <form onSubmit={signInAsAdmin} className="border border-border bg-card p-8 space-y-5">
+            <form onSubmit={signInAsAdmin} noValidate className="border border-border bg-card p-8 space-y-5">
               <label className="block">
                 <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Email</div>
                 <input
