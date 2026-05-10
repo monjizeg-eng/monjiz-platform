@@ -4,32 +4,31 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
 const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default async function handler(req: Request) {
-  const url = new URL(req.url);
+export default async function handler(req: any, res: any) {
   const method = req.method;
 
   try {
     if (method === "GET") {
-      const freelancerId = url.searchParams.get("freelancerId");
+      const freelancerId = Array.isArray(req.query.freelancerId) ? req.query.freelancerId[0] : req.query.freelancerId;
 
       if (freelancerId) {
         const { data, error } = await supabase.from("project_requests").select("*").eq("freelancer_id", freelancerId).order("created_at", { ascending: false });
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-        return new Response(JSON.stringify(data), { status: 200 });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json(data);
       }
 
-      return new Response(JSON.stringify({ error: "freelancerId required" }), { status: 400 });
+      return res.status(400).json({ error: "freelancerId required" });
     }
 
     if (method === "POST") {
-      const body = await req.json();
+      const body = req.body;
       const { data, error } = await supabase.from("project_requests").insert([body]).select();
-      if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-      return new Response(JSON.stringify(data[0]), { status: 201 });
+      if (error) return res.status(400).json({ error: error.message });
+      return res.status(201).json(data[0]);
     }
 
-    return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+    return res.status(405).json({ error: "Method not allowed" });
   } catch (error) {
-    return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+    return res.status(500).json({ error: String(error) });
   }
 }

@@ -4,9 +4,9 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
   if (req.method === "POST") {
-    const body = await req.json();
+    const body = req.body;
     const action = body.action;
 
     try {
@@ -15,8 +15,8 @@ export default async function handler(req: Request) {
           email: body.email,
           password: body.password,
         });
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-        return new Response(JSON.stringify(data), { status: 200 });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json(data);
       }
 
       if (action === "sign-in") {
@@ -24,27 +24,27 @@ export default async function handler(req: Request) {
           email: body.email,
           password: body.password,
         });
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-        return new Response(JSON.stringify(data), { status: 200 });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json(data);
       }
 
       if (action === "sign-out") {
         const { error } = await supabase.auth.signOut();
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-        return new Response(JSON.stringify({ success: true }), { status: 200 });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json({ success: true });
       }
 
       if (action === "get-session") {
         const { data, error } = await supabase.auth.getSession();
-        if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400 });
-        return new Response(JSON.stringify(data), { status: 200 });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json(data);
       }
 
-      return new Response(JSON.stringify({ error: "Unknown action" }), { status: 400 });
+      return res.status(400).json({ error: "Unknown action" });
     } catch (error) {
-      return new Response(JSON.stringify({ error: String(error) }), { status: 500 });
+      return res.status(500).json({ error: String(error) });
     }
   }
 
-  return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405 });
+  return res.status(405).json({ error: "Method not allowed" });
 }
