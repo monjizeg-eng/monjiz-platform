@@ -130,7 +130,7 @@ function SignupPage() {
         linkedin: data.linkedin || null,
         behance: data.behance || null,
         github: data.github || null,
-        status: "active",
+        status: "pending",
       });
 
       toast.success("Welcome to Monjiz!");

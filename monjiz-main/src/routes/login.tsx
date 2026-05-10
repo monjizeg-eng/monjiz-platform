@@ -73,7 +73,6 @@ function LoginPage() {
             <p className="text-sm text-center text-muted-foreground">
               No account? <Link to="/signup" className="underline underline-offset-4 text-primary">Join Monjiz</Link>
             </p>
-            <p className="text-sm text-center text-muted-foreground">Admin access also works with <span className="font-semibold">admin@admin.com</span> / <span className="font-semibold">admin</span>.</p>
           </form>
         </div>
       </main>
