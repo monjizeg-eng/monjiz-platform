@@ -78,10 +78,10 @@ function Index() {
               Connect with vetted designers, developers, and business support specialists ready to deliver high-quality results on your terms.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3">
-              <Link to="/marketplace" className="inline-flex items-center justify-center px-6 py-4 bg-card text-primary font-semibold border border-white/20 hover:bg-white transition">
-                post a task its free!
+              <Link to="/marketplace" className="inline-flex items-center justify-center px-6 py-4 bg-white text-primary font-semibold border border-primary/20 hover:bg-secondary/15 transition hover:-translate-y-0.5">
+                Explore freelancers
               </Link>
-              <Link to="/signup" className="inline-flex items-center justify-center px-6 py-4 border border-white text-white font-semibold hover:bg-white/10 transition">
+              <Link to="/signup" className="inline-flex items-center justify-center px-6 py-4 border border-primary text-primary bg-transparent font-semibold hover:bg-secondary/10 transition">
                 join as a freelancer
               </Link>
             </div>
@@ -89,14 +89,14 @@ function Index() {
         </div>
       </section>
 
-      <section className="bg-primary text-primary-foreground py-6">
+      <section className="bg-background text-primary py-6">
         <div className="container-mz flex flex-wrap justify-center gap-3">
           {categories.map((s) => (
             <Link
               key={s.en}
               to="/marketplace"
               search={{ specialty: s.key }}
-              className="px-4 py-3 bg-card text-primary border border-white/15 uppercase tracking-[0.15em] text-xs font-semibold hover:bg-secondary transition"
+              className="px-4 py-3 bg-white text-primary border border-secondary/20 uppercase tracking-[0.15em] text-xs font-semibold hover:bg-secondary/10 hover:-translate-y-0.5 transition"
             >
               {s.en}
             </Link>
@@ -105,7 +105,7 @@ function Index() {
       </section>
 
       {/* POPULAR SERVICES / CATEGORIES */}
-      <section className="container-mz py-24">
+      <section className="container-mz py-24 bg-background">
         <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">popular services</div>
@@ -115,7 +115,7 @@ function Index() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {categories.map((s) => (
-            <div key={s.en} className="bg-card border border-border p-8 text-center">
+            <div key={s.en} className="bg-white border border-secondary/20 p-8 text-center hover:-translate-y-0.5 hover:shadow-[0_15px_40px_-30px_rgba(48,48,51,0.55)] transition">
               <div className="mb-4 h-12 w-12 mx-auto flex items-center justify-center text-primary text-xl">•</div>
               <div className="text-lg font-bold mb-2">{s.en}</div>
               <div dir="rtl" className="text-sm text-muted-foreground">{s.ar}</div>
@@ -123,24 +123,24 @@ function Index() {
           ))}
         </div>
         <div className="mt-10">
-          <Link to="/marketplace" className="inline-flex items-center justify-center px-8 py-3 bg-primary text-primary-foreground border border-primary font-medium uppercase tracking-[0.15em] hover:bg-primary/90 transition">
-            post a task its free!
+          <Link to="/marketplace" className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white border border-primary font-medium uppercase tracking-[0.15em] hover:bg-primary/90 transition">
+            Explore services
           </Link>
         </div>
       </section>
 
       {/* TOP FREELANCERS */}
       {talents.length > 0 && (
-        <section className="bg-primary text-primary-foreground py-24">
+        <section className="bg-background text-primary py-24">
           <div className="container-mz">
             <div className="text-center mb-12">
-              <div className="text-xs uppercase tracking-widest text-white/70 mb-3">Our top freelancers</div>
-              <h2 className="text-4xl sm:text-5xl font-black">Our top freelancers</h2>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Our top freelancers</div>
+              <h2 className="text-5xl sm:text-6xl font-black">Our top freelancers</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {talents.map((t) => (
-                <Link key={t.id} to="/freelancer/$id" params={{ id: t.id }} className="bg-card border border-border group flex flex-col">
-                  <div className="aspect-[4/3] bg-background overflow-hidden">
+                <Link key={t.id} to="/freelancer/$id" params={{ id: t.id }} className="bg-white border border-secondary/20 group flex flex-col overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-[0_20px_35px_-30px_rgba(48,48,51,0.45)]">
+                  <div className="aspect-[4/3] bg-secondary/10 overflow-hidden">
                     {t.profile_image ? (
                       <img src={t.profile_image} alt={t.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
@@ -150,9 +150,9 @@ function Index() {
                     )}
                   </div>
                   <div className="p-6">
-                    <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{t.specialty}</div>
-                    <h3 className="text-xl font-bold mb-2 text-primary">{t.name}</h3>
-                    {t.bio && <p className="text-sm text-muted-foreground line-clamp-2">{t.bio}</p>}
+                    <div className="text-sm uppercase tracking-[0.2em] text-secondary mb-1">{t.specialty}</div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-2 text-primary">{t.name}</h3>
+                    {t.bio && <p className="text-base text-muted-foreground line-clamp-2">{t.bio}</p>}
                   </div>
                 </Link>
               ))}
