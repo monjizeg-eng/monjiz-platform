@@ -3,13 +3,24 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase-client";
 import logo from "@/assets/monjiz-logo.png";
 
+const ADMIN_EMAIL = "admin@admin.com";
+
 export function Header() {
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
-  const checkAdmin = async (userId: string | undefined) => {
-    if (!userId) { setIsAdmin(false); return; }
+  const checkAdmin = async (userId: string | undefined, email?: string | null) => {
+    if (!userId && email !== ADMIN_EMAIL) {
+      setIsAdmin(false);
+      return;
+    }
+
+    if (email === ADMIN_EMAIL) {
+      setIsAdmin(true);
+      return;
+    }
+
     const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
     setIsAdmin(!!data);
   };
@@ -17,11 +28,11 @@ export function Header() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setAuthed(!!data.session);
-      checkAdmin(data.session?.user.id);
+      checkAdmin(data.session?.user.id, data.session?.user.email);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setAuthed(!!s);
-      checkAdmin(s?.user.id);
+      checkAdmin(s?.user.id, s?.user.email);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
