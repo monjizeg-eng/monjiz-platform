@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent, useState } from "react";
-import { authSignIn } from "@/integrations/data/vercel-api-client";
+import { authSignIn, authSignUp } from "@/integrations/data/vercel-api-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";

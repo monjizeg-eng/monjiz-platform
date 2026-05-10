@@ -43,7 +43,7 @@ export function Header() {
           <Link to="/marketplace" className="px-3 py-2 hover:bg-secondary transition-colors">Marketplace</Link>
           {authed ? (
             <>
-              <Link to="/dashboard" className="px-3 py-2 hover:bg-secondary transition-colors">Dashboard</Link>
+              {isAdmin && <Link to="/dashboard" className="px-3 py-2 hover:bg-secondary transition-colors">Dashboard</Link>}
               {isAdmin && <Link to="/admin" className="px-3 py-2 hover:bg-secondary transition-colors text-primary font-medium">Admin</Link>}
               <button onClick={logout} className="px-3 py-2 hover:bg-secondary transition-colors">Sign out</button>
             </>

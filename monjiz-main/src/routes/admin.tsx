@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { FormEvent, useEffect, useState } from "react";
-import { listFreelancersAll } from "@/integrations/data/vercel-api-client";
+import { authSignUp, listFreelancersAll } from "@/integrations/data/vercel-api-client";
 import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -98,9 +98,20 @@ function AdminPage() {
       return;
     }
 
-    setAuthorized(true);
-    await load();
-    setLoading(false);
+    try {
+      await authSignUp(email.trim().toLowerCase(), password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (error) throw error;
+      setAuthorized(true);
+      await load();
+    } catch (error: any) {
+      setLoginError(error.message || "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (loading) {
