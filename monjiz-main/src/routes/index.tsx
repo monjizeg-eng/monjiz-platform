@@ -78,7 +78,7 @@ function Index() {
               Connect with vetted designers, developers, and business support specialists ready to deliver high-quality results on your terms.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row gap-3">
-              <Link to="/marketplace" className="inline-flex items-center justify-center px-6 py-4 bg-white text-primary font-semibold border border-primary/20 hover:bg-secondary/15 transition hover:-translate-y-0.5">
+              <Link to="/marketplace" className="inline-flex items-center justify-center px-6 py-4 bg-secondary/15 text-primary font-semibold border border-secondary/20 hover:bg-secondary/20 transition hover:-translate-y-0.5">
                 Explore freelancers
               </Link>
               <Link to="/signup" className="inline-flex items-center justify-center px-6 py-4 border border-primary text-primary bg-transparent font-semibold hover:bg-secondary/10 transition">
@@ -89,7 +89,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="bg-background text-primary py-6">
+      <section className="bg-secondary/10 text-primary py-6">
         <div className="container-mz flex flex-wrap justify-center gap-3">
           {categories.map((s) => (
             <Link
@@ -105,7 +105,7 @@ function Index() {
       </section>
 
       {/* POPULAR SERVICES / CATEGORIES */}
-      <section className="container-mz py-24 bg-background">
+      <section className="container-mz py-24 bg-secondary/10">
         <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
           <div>
             <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">popular services</div>
@@ -131,7 +131,7 @@ function Index() {
 
       {/* TOP FREELANCERS */}
       {talents.length > 0 && (
-        <section className="bg-background text-primary py-24">
+        <section className="bg-secondary/10 text-primary py-24">
           <div className="container-mz">
             <div className="text-center mb-12">
               <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Our top freelancers</div>
@@ -162,7 +162,7 @@ function Index() {
       )}
 
       {/* HOW IT WORKS */}
-      <section className="container-mz py-24">
+      <section className="container-mz py-24 bg-secondary/10">
         <div className="mb-12">
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">03 — How It Works</div>
           <h2 className="text-3xl sm:text-4xl font-black">Three steps, no friction</h2>
