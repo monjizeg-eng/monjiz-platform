@@ -67,26 +67,40 @@ function Index() {
           height={1024}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-primary/50" />
+        <div className="absolute inset-0 bg-black/65" />
         <div className="container-mz relative py-24 sm:py-36">
-          <div className="max-w-3xl bg-card/95 border border-primary/20 p-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-card border border-primary/20 text-primary text-xs uppercase tracking-widest mb-8">
-              <span className="h-1.5 w-1.5 bg-primary" /> Made in Egypt · صُنع في مصر
-            </div>
-            <h1 dir="rtl" className="font-black text-4xl sm:text-6xl leading-[1.1] mb-10 text-primary">
-              اختار أحسن المنجزين <br/>
-              لإنجاز أعمالك عن بُعد
+          <div className="max-w-4xl">
+            <div className="text-xs uppercase tracking-[0.35em] text-white/70 mb-4">monjiz</div>
+            <h1 className="font-black text-5xl sm:text-6xl leading-[1.03] text-white max-w-3xl">
+              Hire elite freelancers for faster, local work in Egypt.
             </h1>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/marketplace" className="group inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition">
-                Request a Task
-                <span className="transition-transform group-hover:translate-x-1">→</span>
+            <p className="mt-6 max-w-2xl text-sm text-white/75">
+              Connect with vetted designers, developers, and business support specialists ready to deliver high-quality results on your terms.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-3">
+              <Link to="/marketplace" className="inline-flex items-center justify-center px-6 py-4 bg-card text-primary font-semibold border border-white/20 hover:bg-white transition">
+                post a task its free!
               </Link>
-              <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-6 py-4 border border-primary text-primary font-medium hover:bg-background transition">
-                Join as a Freelancer
+              <Link to="/signup" className="inline-flex items-center justify-center px-6 py-4 border border-white text-white font-semibold hover:bg-white/10 transition">
+                join as a freelancer
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-primary text-primary-foreground py-6">
+        <div className="container-mz flex flex-wrap justify-center gap-3">
+          {categories.map((s) => (
+            <Link
+              key={s.en}
+              to="/marketplace"
+              search={{ specialty: s.key }}
+              className="px-4 py-3 bg-card text-primary border border-white/15 uppercase tracking-[0.15em] text-xs font-semibold hover:bg-secondary transition"
+            >
+              {s.en}
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -94,47 +108,39 @@ function Index() {
       <section className="container-mz py-24">
         <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
           <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">01 — Popular Services</div>
-            <h2 className="text-3xl sm:text-4xl font-black">Our freelancers will take it from here</h2>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">popular services</div>
+            <h2 className="text-3xl sm:text-4xl font-black">The services clients need most</h2>
           </div>
           <div dir="rtl" className="text-muted-foreground text-lg">الخدمات الأكثر طلبًا</div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
-          {categories.map((s, i) => (
-            <Link
-              key={s.en}
-              to="/marketplace"
-              search={{ specialty: s.key }}
-              className="bg-card p-8 border border-border hover:bg-secondary transition-colors group block"
-            >
-              <div className="text-xs text-muted-foreground mb-8">0{i + 1}</div>
-              <div className="text-xl font-bold mb-2 group-hover:underline underline-offset-4">{s.en}</div>
-              <div dir="rtl" className="text-muted-foreground">{s.ar}</div>
-              <div className="text-xs uppercase tracking-widest text-primary mt-6 opacity-0 group-hover:opacity-100 transition-opacity">Available tasks →</div>
-            </Link>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {categories.map((s) => (
+            <div key={s.en} className="bg-card border border-border p-8 text-center">
+              <div className="mb-4 h-12 w-12 mx-auto flex items-center justify-center text-primary text-xl">•</div>
+              <div className="text-lg font-bold mb-2">{s.en}</div>
+              <div dir="rtl" className="text-sm text-muted-foreground">{s.ar}</div>
+            </div>
           ))}
         </div>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/marketplace" className="px-5 py-3 border border-border text-sm hover:bg-secondary">Request a specific task →</Link>
-          <Link to="/marketplace" className="px-5 py-3 border border-border text-sm hover:bg-secondary">Browse available tasks →</Link>
+        <div className="mt-10">
+          <Link to="/marketplace" className="inline-flex items-center justify-center px-8 py-3 bg-primary text-primary-foreground border border-primary font-medium uppercase tracking-[0.15em] hover:bg-primary/90 transition">
+            post a task its free!
+          </Link>
         </div>
       </section>
 
       {/* TOP FREELANCERS */}
       {talents.length > 0 && (
-        <section className="border-y border-border bg-background">
-          <div className="container-mz py-24">
-            <div className="flex items-end justify-between mb-12 flex-wrap gap-6">
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">02 — Roster</div>
-                <h2 className="text-3xl sm:text-4xl font-black">Our top freelancers</h2>
-              </div>
-              <Link to="/marketplace" className="text-sm underline underline-offset-4">View all →</Link>
+        <section className="bg-primary text-primary-foreground py-24">
+          <div className="container-mz">
+            <div className="text-center mb-12">
+              <div className="text-xs uppercase tracking-widest text-white/70 mb-3">Our top freelancers</div>
+              <h2 className="text-4xl sm:text-5xl font-black">Our top freelancers</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {talents.map((t) => (
-                <Link key={t.id} to="/freelancer/$id" params={{ id: t.id }} className="bg-background border border-border group flex flex-col">
-                  <div className="aspect-[4/3] bg-secondary overflow-hidden">
+                <Link key={t.id} to="/freelancer/$id" params={{ id: t.id }} className="bg-card border border-border group flex flex-col">
+                  <div className="aspect-[4/3] bg-background overflow-hidden">
                     {t.profile_image ? (
                       <img src={t.profile_image} alt={t.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
@@ -145,7 +151,7 @@ function Index() {
                   </div>
                   <div className="p-6">
                     <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{t.specialty}</div>
-                    <h3 className="text-xl font-bold mb-2">{t.name}</h3>
+                    <h3 className="text-xl font-bold mb-2 text-primary">{t.name}</h3>
                     {t.bio && <p className="text-sm text-muted-foreground line-clamp-2">{t.bio}</p>}
                   </div>
                 </Link>
