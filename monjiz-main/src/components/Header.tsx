@@ -8,31 +8,42 @@ const ADMIN_EMAIL = "admin@admin.com";
 export function Header() {
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isFreelancer, setIsFreelancer] = useState(false);
   const navigate = useNavigate();
 
-  const checkAdmin = async (userId: string | undefined, email?: string | null) => {
+  const checkUser = async (userId: string | undefined, email?: string | null) => {
     if (!userId && email !== ADMIN_EMAIL) {
       setIsAdmin(false);
+      setIsFreelancer(false);
       return;
     }
 
     if (email === ADMIN_EMAIL) {
       setIsAdmin(true);
+      setIsFreelancer(false);
       return;
     }
 
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
-    setIsAdmin(!!data);
+    const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+    setIsAdmin(!!roleRow);
+
+    // Check if user is a freelancer
+    try {
+      const { data: freelancerData } = await supabase.from("freelancers").select("id").eq("user_id", userId).maybeSingle();
+      setIsFreelancer(!!freelancerData);
+    } catch {
+      setIsFreelancer(false);
+    }
   };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setAuthed(!!data.session);
-      checkAdmin(data.session?.user.id, data.session?.user.email);
+      checkUser(data.session?.user.id, data.session?.user.email);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setAuthed(!!s);
-      checkAdmin(s?.user.id, s?.user.email);
+      checkUser(s?.user.id, s?.user.email);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -57,7 +68,7 @@ export function Header() {
         <div className="flex items-center gap-2">
           {authed ? (
             <>
-              {isAdmin && <Link to="/dashboard" className="px-3 py-2 border border-primary/20 hover:bg-primary/10 transition">Dashboard</Link>}
+              {(isAdmin || isFreelancer) && <Link to="/dashboard" className="px-3 py-2 border border-primary/20 hover:bg-primary/10 transition">Dashboard</Link>}
               <button onClick={logout} className="px-3 py-2 border border-primary/20 hover:bg-primary/10 transition">Sign out</button>
             </>
           ) : (

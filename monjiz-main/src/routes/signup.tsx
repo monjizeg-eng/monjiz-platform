@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { authSignUp, insertFreelancer } from "@/integrations/data/vercel-api-client";
-import { localDb } from "@/integrations/data/monjiz-client";
+import { supabase } from "@/integrations/supabase-client";
 import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -72,9 +72,10 @@ function SignupPage() {
   const uploadFile = async (userId: string, file: File, kind: "headshot" | "portfolio", idx?: number) => {
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${userId}/${kind}-${Date.now()}-${idx ?? 0}.${ext}`;
-    const { error } = await localDb.storage.from("freelancer-media").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("freelancer-media").upload(path, file, { upsert: true });
     if (error) throw error;
-    return localDb.storage.from("freelancer-media").getPublicUrl(path).data.publicUrl;
+    const { data } = supabase.storage.from("freelancer-media").getPublicUrl(path);
+    return data.publicUrl;
   };
 
   const submit = async () => {
@@ -89,24 +90,11 @@ function SignupPage() {
       const auth = await authSignUp(data.email, data.password);
       const userId = auth.user?.id;
       if (!userId) {
-        throw new Error(
-          "Could not create your account. If email confirmation is on in Supabase, confirm your email or disable it for local development."
-        );
+        throw new Error("Could not create your account. Please try again or contact support.");
       }
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-        if (signInError) {
-          throw new Error(
-            signInError.message ||
-              "Signed up but could not start a session. Turn off “Confirm email” in Supabase Auth (local dev) or confirm your email and complete signup from the login page."
-          );
-        }
-      }
+      // Sign in to establish session
+      await authSignIn(data.email, data.password);
 
       let profileUrl: string | null = null;
       if (data.profileImage) profileUrl = await uploadFile(userId, data.profileImage, "headshot");
@@ -133,7 +121,7 @@ function SignupPage() {
         status: "pending",
       });
 
-      toast.success("Welcome to Monjiz!");
+      toast.success("Welcome to Monjiz! Your profile is pending approval.");
       navigate({ to: "/dashboard" });
     } catch (e: any) {
       toast.error(e.message ?? "Signup failed");
