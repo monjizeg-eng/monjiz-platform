@@ -89,21 +89,6 @@ function Index() {
         </div>
       </section>
 
-      <section className="bg-secondary/10 text-primary py-6">
-        <div className="container-mz flex flex-wrap justify-center gap-3">
-          {categories.map((s) => (
-            <Link
-              key={s.en}
-              to="/marketplace"
-              search={{ specialty: s.key }}
-              className="px-4 py-3 bg-white text-primary border border-secondary/20 uppercase tracking-[0.15em] text-xs font-semibold hover:bg-secondary/10 hover:-translate-y-0.5 transition"
-            >
-              {s.en}
-            </Link>
-          ))}
-        </div>
-      </section>
-
       {/* POPULAR SERVICES / CATEGORIES */}
       <section className="container-mz py-24 bg-secondary/10">
         <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
@@ -115,11 +100,16 @@ function Index() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
           {categories.map((s) => (
-            <div key={s.en} className="bg-white border border-secondary/20 p-8 text-center hover:-translate-y-0.5 hover:shadow-[0_15px_40px_-30px_rgba(48,48,51,0.55)] transition">
-              <div className="mb-4 h-12 w-12 mx-auto flex items-center justify-center text-primary text-xl">•</div>
+            <Link
+              key={s.en}
+              to="/marketplace"
+              search={{ specialty: s.key }}
+              className="group block bg-primary text-white border border-primary/20 p-8 text-center hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-[0_15px_40px_-30px_rgba(0,0,0,0.45)] transition"
+            >
+              <div className="mb-4 h-12 w-12 mx-auto flex items-center justify-center rounded-full bg-white/10 text-white text-xl">•</div>
               <div className="text-lg font-bold mb-2">{s.en}</div>
-              <div dir="rtl" className="text-sm text-muted-foreground">{s.ar}</div>
-            </div>
+              <div dir="rtl" className="text-sm text-white/75">{s.ar}</div>
+            </Link>
           ))}
         </div>
         <div className="mt-10">
