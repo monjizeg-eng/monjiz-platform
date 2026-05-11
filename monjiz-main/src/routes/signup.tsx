@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { authSignUp, authSignIn, insertFreelancer } from "@/integrations/data/vercel-api-client";
+import { insertFreelancer } from "@/integrations/data/vercel-api-client";
 import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -86,14 +86,18 @@ function SignupPage() {
     }
     setLoading(true);
     try {
-      const auth = await authSignUp(data.email, data.password);
-      const userId = auth.user?.id;
-      if (!userId) {
-        throw new Error("Could not create your account. Please try again or contact support.");
-      }
+      // Sign up with Supabase directly
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email.trim(),
+        password: data.password,
+      });
 
-      // Sign in to establish session
-      await authSignIn(data.email, data.password);
+      if (signUpError) throw signUpError;
+
+      const userId = authData.user?.id;
+      if (!userId) {
+        throw new Error("Could not create your account. Please try again.");
+      }
 
       let profileUrl: string | null = null;
       if (data.profileImage) profileUrl = await uploadFile(userId, data.profileImage, "headshot");

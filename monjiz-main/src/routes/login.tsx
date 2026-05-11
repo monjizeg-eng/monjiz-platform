@@ -1,13 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { FormEvent, useState } from "react";
-import { authSignIn, authSignUp } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { toast } from "sonner";
 
 const ADMIN_EMAIL = "admin@admin.com";
 const ADMIN_ALIAS_PASSWORD = "admin";
 const ADMIN_REAL_PASSWORD = "admin123!";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/login")({
   head: () => ({ meta: [{ title: "Login — Monjiz" }] }),
@@ -27,8 +27,32 @@ function LoginPage() {
     const trimmedEmail = email.trim().toLowerCase();
     if (trimmedEmail === ADMIN_EMAIL && password === ADMIN_ALIAS_PASSWORD) {
       try {
-        await authSignUp(ADMIN_EMAIL, ADMIN_REAL_PASSWORD);
-        await authSignIn(ADMIN_EMAIL, ADMIN_REAL_PASSWORD);
+        // Try to sign in admin, create if doesn't exist
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: ADMIN_EMAIL,
+          password: ADMIN_REAL_PASSWORD,
+        });
+
+        if (signInError) {
+          // Try to create admin account
+          const { error: signUpError } = await supabase.auth.signUp({
+            email: ADMIN_EMAIL,
+            password: ADMIN_REAL_PASSWORD,
+          });
+
+          if (signUpError && !signUpError.message.includes("already")) {
+            throw signUpError;
+          }
+
+          // Try sign in again after potential creation
+          const { error: retryError } = await supabase.auth.signInWithPassword({
+            email: ADMIN_EMAIL,
+            password: ADMIN_REAL_PASSWORD,
+          });
+
+          if (retryError) throw retryError;
+        }
+
         toast.success("Welcome admin");
         navigate({ to: "/dashboard" });
         return;
@@ -41,7 +65,13 @@ function LoginPage() {
     }
 
     try {
-      await authSignIn(email, password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (error) throw error;
+
       toast.success("Welcome back");
       navigate({ to: "/dashboard" });
     } catch (error: any) {
