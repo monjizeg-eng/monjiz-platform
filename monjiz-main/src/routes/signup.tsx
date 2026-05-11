@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { authSignUp, insertFreelancer } from "@/integrations/data/vercel-api-client";
-import { supabase } from "@/integrations/supabase-client";
+import { authSignUp, authSignIn, insertFreelancer } from "@/integrations/data/vercel-api-client";
 import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
