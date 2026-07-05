@@ -33,6 +33,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Freelancer | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [requests, setRequests] = useState<Request[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
 
@@ -40,8 +41,12 @@ function Dashboard() {
     (async () => {
       const { data: { session } } = await localDb.auth.getSession();
       if (!session) { navigate({ to: "/login" }); return; }
-      const { data: f } = await localDb.from("freelancers").select("*").eq("user_id", session.user.id).maybeSingle();
+      const [{ data: f }, { data: roleRow }] = await Promise.all([
+        localDb.from("freelancers").select("*").eq("user_id", session.user.id).maybeSingle(),
+        localDb.from("user_roles").select("role").eq("user_id", session.user.id).eq("role", "admin").maybeSingle(),
+      ]);
       setProfile(f as Freelancer | null);
+      setIsAdmin(!!roleRow);
       if (f) {
         const [{ data: cr }, { data: pr }, { data: proj }] = await Promise.all([
           localDb.from("client_requests").select("*").eq("freelancer_id", f.id).order("created_at", { ascending: false }),
@@ -61,9 +66,22 @@ function Dashboard() {
 
   if (!profile) return (
     <Shell>
-      <div className="container-mz py-20 text-center">
-        <h1 className="text-2xl font-bold mb-3">No freelancer profile yet</h1>
-        <Link to="/signup" className="underline underline-offset-4">Complete onboarding →</Link>
+      <div className="container-mz py-20">
+        {isAdmin ? (
+          <>
+            <AdminSetupHelper />
+            <div className="text-center text-muted-foreground text-sm">
+              Need a freelancer profile too?{" "}
+              <Link to="/signup" className="underline underline-offset-4 text-primary">Complete onboarding →</Link>
+            </div>
+          </>
+        ) : (
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-3">No freelancer profile yet</h1>
+            <p className="text-muted-foreground mb-4">Finish onboarding to set up your marketplace profile.</p>
+            <Link to="/signup" className="underline underline-offset-4">Complete onboarding →</Link>
+          </div>
+        )}
       </div>
     </Shell>
   );

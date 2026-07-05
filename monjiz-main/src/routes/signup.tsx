@@ -91,9 +91,7 @@ function SignupPage() {
       if (error) throw error;
       const userId = auth.user?.id;
       if (!userId) {
-        throw new Error(
-          "Could not create your account. If email confirmation is on in Supabase, confirm your email or disable it for local development."
-        );
+        throw new Error("Could not create your account. Please try again.");
       }
 
       const { data: { session } } = await localDb.auth.getSession();
@@ -105,7 +103,7 @@ function SignupPage() {
         if (signInError) {
           throw new Error(
             signInError.message ||
-              "Signed up but could not start a session. Turn off “Confirm email” in Supabase Auth (local dev) or confirm your email and complete signup from the login page."
+              "Account created but sign-in failed. Try signing in from the login page.",
           );
         }
       }
@@ -132,7 +130,7 @@ function SignupPage() {
         linkedin: data.linkedin || null,
         behance: data.behance || null,
         github: data.github || null,
-        status: "active",
+        status: "pending",
       });
       if (insErr) throw insErr;
 

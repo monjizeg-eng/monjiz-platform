@@ -3,7 +3,7 @@
  * Legacy script — the web app no longer uses Supabase.
  *
  * An admin account is created automatically in the browser on first load
- * (localStorage key monjiz_local_db_v1). Default login: admin@admin.com / admin
+ * (localStorage key monjiz_local_db_v1). Default login: admin@admin.com / admin1234
  *
  * You can override defaults with Vite env vars when building or in .env:
  *   VITE_MONJIZ_ADMIN_EMAIL
@@ -16,6 +16,6 @@
 console.log(`
 Monjiz — local-only mode (no cloud database).
   • Open the app once; the seeded admin is created in this browser.
-  • Default credentials: admin@admin.com / admin (unless overridden by env).
+  • Default credentials: admin@admin.com / admin1234 (unless overridden by env).
   • To reset: clear localStorage for the site, then reload.
 `);

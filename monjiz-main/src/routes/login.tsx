@@ -23,6 +23,19 @@ function LoginPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Welcome back");
+    const { data: { session } } = await localDb.auth.getSession();
+    if (session) {
+      const { data: roleRow } = await localDb
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (roleRow) {
+        navigate({ to: "/admin" });
+        return;
+      }
+    }
     navigate({ to: "/dashboard" });
   };
 

@@ -76,6 +76,24 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function getAdminCredentials() {
+  const email =
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_MONJIZ_ADMIN_EMAIL) || "admin@admin.com";
+  const password =
+    (typeof import.meta !== "undefined" && import.meta.env?.VITE_MONJIZ_ADMIN_PASSWORD) || "admin1234";
+  return { email: email.toLowerCase(), password };
+}
+
+function migrateDb(db: Db): Db {
+  const { email: adminEmail, password: adminPassword } = getAdminCredentials();
+  const admin = db.users.find((u) => u.email === adminEmail);
+  if (admin && admin.password === "admin" && adminPassword !== "admin") {
+    admin.password = adminPassword;
+    saveDb(db);
+  }
+  return db;
+}
+
 /** Exposed for the query adapter; safe on SSR (returns empty). */
 export function loadDb(): Db {
   if (typeof window === "undefined") {
@@ -86,7 +104,7 @@ export function loadDb(): Db {
     if (!raw) return seedDb();
     const parsed = JSON.parse(raw) as Db;
     if (!parsed.users || !Array.isArray(parsed.freelancers)) return seedDb();
-    return parsed;
+    return migrateDb(parsed);
   } catch {
     return seedDb();
   }
@@ -105,18 +123,24 @@ function emptyDb(): Db {
 
 function saveDb(db: Db) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(DB_KEY, JSON.stringify(db));
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+  } catch (e) {
+    if (e instanceof DOMException && (e.name === "QuotaExceededError" || e.code === 22)) {
+      throw new Error(
+        "Browser storage is full. Use smaller portfolio images or clear site data for this site, then try again.",
+      );
+    }
+    throw e;
+  }
 }
 
 function seedDb(): Db {
   const db = emptyDb();
   const adminId = crypto.randomUUID();
-  const adminEmail =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_MONJIZ_ADMIN_EMAIL) || "admin@admin.com";
-  const adminPassword =
-    (typeof import.meta !== "undefined" && import.meta.env?.VITE_MONJIZ_ADMIN_PASSWORD) || "admin";
+  const { email: adminEmail, password: adminPassword } = getAdminCredentials();
 
-  db.users.push({ id: adminId, email: adminEmail.toLowerCase(), password: adminPassword });
+  db.users.push({ id: adminId, email: adminEmail, password: adminPassword });
   db.user_roles.push({
     id: crypto.randomUUID(),
     user_id: adminId,
@@ -191,14 +215,19 @@ export async function authSignUp(args: {
   const db = loadDb();
   const email = args.email.trim().toLowerCase();
   if (db.users.some((u) => u.email === email)) {
+    const { email: adminEmail } = getAdminCredentials();
+    const message =
+      email === adminEmail
+        ? "This admin account already exists. Sign in instead."
+        : "An account with this email already exists. Sign in instead.";
     return {
       data: { user: null, session: null },
-      error: { message: "User already registered" },
+      error: { message },
     };
   }
   const id = crypto.randomUUID();
   db.users.push({ id, email, password: args.password });
-  if (email === "admin@admin.com") {
+  if (email === getAdminCredentials().email) {
     db.user_roles.push({
       id: crypto.randomUUID(),
       user_id: id,
