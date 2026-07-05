@@ -1,59 +1,83 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { supabase } from "@/integrations/supabase-client";
 import logo from "@/assets/monjiz-logo.png";
+
+const ADMIN_EMAIL = "admin@admin.com";
 
 export function Header() {
   const [authed, setAuthed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isFreelancer, setIsFreelancer] = useState(false);
   const navigate = useNavigate();
 
-  const checkAdmin = async (userId: string | undefined) => {
-    if (!userId) { setIsAdmin(false); return; }
-    const { data } = await localDb.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
-    setIsAdmin(!!data);
+  const checkUser = async (userId: string | undefined, email?: string | null) => {
+    if (!userId && email !== ADMIN_EMAIL) {
+      setIsAdmin(false);
+      setIsFreelancer(false);
+      return;
+    }
+
+    if (email === ADMIN_EMAIL) {
+      setIsAdmin(true);
+      setIsFreelancer(false);
+      return;
+    }
+
+    const { data: roleRow } = await supabase.from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+    setIsAdmin(!!roleRow);
+
+    // Check if user is a freelancer
+    try {
+      const { data: freelancerData } = await supabase.from("freelancers").select("id").eq("user_id", userId).maybeSingle();
+      setIsFreelancer(!!freelancerData);
+    } catch {
+      setIsFreelancer(false);
+    }
   };
 
   useEffect(() => {
-    localDb.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
       setAuthed(!!data.session);
-      checkAdmin(data.session?.user.id);
+      checkUser(data.session?.user.id, data.session?.user.email);
     });
-    const { data: sub } = localDb.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setAuthed(!!s);
-      checkAdmin(s?.user.id);
+      checkUser(s?.user.id, s?.user.email);
     });
     return () => sub.subscription.unsubscribe();
   }, []);
 
   const logout = async () => {
-    await localDb.auth.signOut();
+    await supabase.auth.signOut();
     navigate({ to: "/" });
   };
 
   return (
-    <header className="border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-50">
-      <div className="container-mz flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logo} alt="Monjiz" className="h-9 w-9 object-contain" />
-          <span className="font-black text-xl tracking-tight">Monjiz</span>
-          <span className="text-xs text-muted-foreground hidden sm:inline">منجز</span>
+    <header className="sticky top-0 z-50 bg-white text-primary border-b border-primary/20">
+      <div className="container-mz flex h-16 items-center justify-between gap-4">
+        <Link to="/" className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.2em]">
+          <img src={logo} alt="Monjiz" className="h-8 w-8 object-contain" />
+          <span>monjiz</span>
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-2 text-sm">
-          <Link to="/marketplace" className="px-3 py-2 hover:bg-secondary transition-colors">Marketplace</Link>
+        <nav className="hidden md:flex items-center gap-2 text-xs uppercase tracking-[0.15em]">
+          <Link to="/marketplace" className="px-3 py-2 hover:bg-primary/10 transition">Visual Content & Design</Link>
+          <Link to="/marketplace" search={{ specialty: "Web Development" }} className="px-3 py-2 hover:bg-primary/10 transition">website developers</Link>
+          <Link to="/marketplace" search={{ specialty: "Marketing" }} className="px-3 py-2 hover:bg-primary/10 transition">Business Support & Micro-Tasks</Link>
+        </nav>
+        <div className="flex items-center gap-2">
           {authed ? (
             <>
-              <Link to="/dashboard" className="px-3 py-2 hover:bg-secondary transition-colors">Dashboard</Link>
-              {isAdmin && <Link to="/admin" className="px-3 py-2 hover:bg-secondary transition-colors text-primary font-medium">Admin</Link>}
-              <button onClick={logout} className="px-3 py-2 hover:bg-secondary transition-colors">Sign out</button>
+              {(isAdmin || isFreelancer) && <Link to="/dashboard" className="px-3 py-2 border border-primary/20 hover:bg-primary/10 transition">Dashboard</Link>}
+              <button onClick={logout} className="px-3 py-2 border border-primary/20 hover:bg-primary/10 transition">Sign out</button>
             </>
           ) : (
             <>
-              <Link to="/login" className="px-3 py-2 hover:bg-secondary transition-colors">Login</Link>
-              <Link to="/signup" className="px-4 py-2 bg-primary text-primary-foreground hover:opacity-90 transition-opacity">Join</Link>
+              <Link to="/login" className="px-3 py-2 border border-primary/20 hover:bg-primary/10 transition">Login</Link>
+              <Link to="/signup" className="px-3 py-2 border border-primary bg-primary text-white font-semibold hover:bg-primary/90 transition">Join</Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm --prefix monjiz-main run build",
+  "outputDirectory": "monjiz-main/.output",
+  "functions": {
+    "monjiz-main/api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
+}

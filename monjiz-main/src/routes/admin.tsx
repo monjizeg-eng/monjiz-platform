@@ -1,6 +1,11 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { FormEvent, useEffect, useState } from "react";
+import { authSignUp, listFreelancersAll } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
+
+const ADMIN_EMAIL = "admin@admin.com";
+const ADMIN_ALIAS_PASSWORD = "admin";
+const ADMIN_REAL_PASSWORD = "admin123!";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FreelancerManagementTable } from "@/components/FreelancerManagementTable";
@@ -30,7 +35,6 @@ export const Route = createFileRoute("/admin")({
 });
 
 function AdminPage() {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
@@ -41,37 +45,35 @@ function AdminPage() {
     pending: 0,
     banned: 0,
   });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const load = async () => {
-    const { data, error } = await localDb
-      .from("freelancers")
-      .select("id,name,email,whatsapp,specialty,status,created_at,bio,portfolio,linkedin,behance,github,profile_image,portfolio_images")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error(error.message);
-      return;
+    try {
+      const data = await listFreelancersAll();
+      setFreelancers(data as Freelancer[]);
+      const allData = data as Freelancer[];
+      setStats({
+        total: allData.length,
+        active: allData.filter((f) => f.status === "active").length,
+        pending: allData.filter((f) => f.status === "pending").length,
+        banned: allData.filter((f) => f.status === "banned").length,
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to load freelancers");
     }
-
-    setFreelancers((data ?? []) as Freelancer[]);
-    const allData = (data ?? []) as Freelancer[];
-    setStats({
-      total: allData.length,
-      active: allData.filter((f) => f.status === "active").length,
-      pending: allData.filter((f) => f.status === "pending").length,
-      banned: allData.filter((f) => f.status === "banned").length,
-    });
   };
 
   useEffect(() => {
     (async () => {
-      const { data: { session } } = await localDb.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate({ to: "/login" });
+        setLoading(false);
         return;
       }
 
-      const { data: roleRow } = await localDb
+      const { data: roleRow } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", session.user.id)
@@ -87,7 +89,35 @@ function AdminPage() {
       await load();
       setLoading(false);
     })();
-  }, [navigate]);
+  }, []);
+
+  const signInAsAdmin = async (e: FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setLoading(true);
+
+    const trimmedEmail = email.trim().toLowerCase();
+    if (trimmedEmail !== ADMIN_EMAIL || password !== ADMIN_ALIAS_PASSWORD) {
+      setLoginError("Invalid email or password. Use admin@admin.com / admin.");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await authSignUp(ADMIN_EMAIL, ADMIN_REAL_PASSWORD);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: ADMIN_REAL_PASSWORD,
+      });
+      if (error) throw error;
+      setAuthorized(true);
+      await load();
+    } catch (error: any) {
+      setLoginError(error.message || "Sign in failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -100,13 +130,44 @@ function AdminPage() {
   if (!authorized) {
     return (
       <Shell>
-        <div className="container-mz py-20 text-center">
-          <h1 className="text-2xl font-bold mb-3">Access Denied</h1>
-          <p className="text-muted-foreground mb-4">You don't have permission to access the admin panel.</p>
-          <Link to="/dashboard" className="underline underline-offset-4">
-            Go to dashboard →
-          </Link>
-        </div>
+        <main className="container-mz py-16 flex-1">
+          <div className="max-w-md mx-auto">
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Admin access</div>
+            <h1 className="text-4xl font-black mb-10">Admin sign in</h1>
+            <form onSubmit={signInAsAdmin} noValidate className="border border-border bg-card p-8 space-y-5">
+              <label className="block">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Email</div>
+                <input
+                  type="email"
+                  required
+                  autoComplete="username"
+                  className="mz-input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </label>
+              <label className="block">
+                <div className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Password</div>
+                <input
+                  type="password"
+                  required
+                  autoComplete="current-password"
+                  className="mz-input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </label>
+              {loginError ? <p className="text-sm text-red-500">{loginError}</p> : null}
+              <button type="submit" className="w-full px-6 py-3 bg-primary text-primary-foreground text-sm font-medium hover:opacity-90">
+                Sign in →
+              </button>
+              <p className="text-sm text-center text-muted-foreground">Use <span className="font-semibold">admin@admin.com</span> for email and <span className="font-semibold">admin</span> for password.</p>
+              <p className="text-sm text-center text-muted-foreground">
+                Or <Link to="/login" className="underline underline-offset-4 text-primary">sign in with your account</Link> if you already have one.
+              </p>
+            </form>
+          </div>
+        </main>
       </Shell>
     );
   }

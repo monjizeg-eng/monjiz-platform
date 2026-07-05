@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { insertProject, updateProject, deleteProject } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { toast } from "sonner";
 import { MAX_IMAGES_PER_PROJECT_COLLAGE, MAX_SHOWCASE_PROJECTS } from "@/lib/showcase-constants";
 
@@ -36,9 +37,10 @@ export function ProjectsManager({ freelancerId, projects, onProjectsUpdate }: Pr
   const uploadImage = async (file: File, projectId: string): Promise<string> => {
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${freelancerId}/project-${projectId}-${Date.now()}.${ext}`;
-    const { error } = await localDb.storage.from("freelancer-media").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("freelancer-media").upload(path, file, { upsert: true });
     if (error) throw error;
-    return localDb.storage.from("freelancer-media").getPublicUrl(path).data.publicUrl;
+    const { data } = supabase.storage.from("freelancer-media").getPublicUrl(path);
+    return data.publicUrl;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,34 +70,21 @@ export function ProjectsManager({ freelancerId, projects, onProjectsUpdate }: Pr
 
       if (editing) {
         // Update existing project
-        const { error } = await localDb
-          .from("projects")
-          .update({
-            title: form.title,
-            description: form.description || null,
-            images: imageUrls,
-          })
-          .eq("id", editing);
-
-        if (error) throw error;
+        await updateProject(editing, {
+          title: form.title,
+          description: form.description || null,
+          images: imageUrls,
+        });
         toast.success("Project updated!");
       } else {
         // Create new project
-        const { data, error } = await localDb
-          .from("projects")
-          .insert({
-            freelancer_id: freelancerId,
-            title: form.title,
-            description: form.description || null,
-            images: imageUrls,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          onProjectsUpdate([...projects, data as Project]);
-        }
+        const data = await insertProject({
+          freelancer_id: freelancerId,
+          title: form.title,
+          description: form.description || null,
+          images: imageUrls,
+        });
+        onProjectsUpdate([...projects, data as Project]);
         toast.success("Project created!");
       }
 
@@ -112,8 +101,7 @@ export function ProjectsManager({ freelancerId, projects, onProjectsUpdate }: Pr
     if (!confirm("Delete this project? This action cannot be undone.")) return;
 
     try {
-      const { error } = await localDb.from("projects").delete().eq("id", projectId);
-      if (error) throw error;
+      await deleteProject(projectId);
       onProjectsUpdate(projects.filter((p) => p.id !== projectId));
       toast.success("Project deleted");
     } catch (error: any) {

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { localDb } from "@/integrations/data/client";
+import { getFreelancerById, listProjectsByFreelancer } from "@/integrations/data/vercel-api-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ProjectGallery } from "@/components/ProjectGallery";
@@ -41,25 +41,21 @@ function FreelancerProfile() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await localDb
-        .from("freelancers")
-        .select("id,name,specialty,profile_image,portfolio_images,bio,portfolio,linkedin,behance,github")
-        .eq("id", id)
-        .eq("status", "active")
-        .maybeSingle();
-      if (error) toast.error(error.message);
-      setF(data as Freelancer | null);
+      try {
+        const freelancer = await getFreelancerById(id);
+        if (freelancer.status !== "active") {
+          setF(null);
+        } else {
+          setF(freelancer);
+        }
 
-      // Fetch projects
-      const { data: projectsData, error: projectsError } = await localDb
-        .from("projects")
-        .select("id,title,description,images,created_at")
-        .eq("freelancer_id", id)
-        .order("created_at", { ascending: true });
-      if (projectsError) toast.error(projectsError.message);
-      const list = (projectsData ?? []) as Project[];
-      setProjects(list.slice(0, MAX_SHOWCASE_PROJECTS));
-      
+        // Fetch projects
+        const projectsData = await listProjectsByFreelancer(id);
+        const list = projectsData as Project[];
+        setProjects(list.slice(0, MAX_SHOWCASE_PROJECTS));
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load freelancer");
+      }
       setLoading(false);
     })();
   }, [id]);
@@ -77,7 +73,7 @@ function FreelancerProfile() {
           </div>
         ) : (
           <>
-            <section className="border-b border-border" style={{ background: "var(--gradient-warm)" }}>
+            <section className="border-b border-border bg-background">
               <div className="container-mz py-16 grid md:grid-cols-[240px_1fr] gap-10 items-start">
                 <div className="aspect-square w-full max-w-[240px] bg-background border border-border overflow-hidden">
                   {f.profile_image ? (

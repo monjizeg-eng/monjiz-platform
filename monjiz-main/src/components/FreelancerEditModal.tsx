@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { updateFreelancer, listProjectsByFreelancer, updateProject } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { toast } from "sonner";
 import { MAX_IMAGES_PER_PROJECT_COLLAGE, MAX_SHOWCASE_PROJECTS } from "@/lib/showcase-constants";
 
@@ -34,9 +35,10 @@ interface FreelancerEditModalProps {
 }
 
 async function uploadPublicFile(file: File, path: string): Promise<string> {
-  const { error } = await localDb.storage.from("freelancer-media").upload(path, file, { upsert: true });
+  const { error } = await supabase.storage.from("freelancer-media").upload(path, file, { upsert: true });
   if (error) throw error;
-  return localDb.storage.from("freelancer-media").getPublicUrl(path).data.publicUrl;
+  const { data } = supabase.storage.from("freelancer-media").getPublicUrl(path);
+  return data.publicUrl;
 }
 
 export function FreelancerEditModal({ freelancer, onClose, onSave }: FreelancerEditModalProps) {
@@ -65,16 +67,12 @@ export function FreelancerEditModal({ freelancer, onClose, onSave }: FreelancerE
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data, error } = await localDb
-        .from("projects")
-        .select("id,title,description,images,created_at")
-        .eq("freelancer_id", freelancer.id)
-        .order("created_at", { ascending: true });
-      if (error) {
-        toast.error(error.message);
-        return;
+      try {
+        const data = await listProjectsByFreelancer(freelancer.id);
+        if (!cancelled) setShowcaseProjects(data as ProjectRow[]);
+      } catch (error: any) {
+        toast.error(error.message || "Failed to load projects");
       }
-      if (!cancelled) setShowcaseProjects((data ?? []) as ProjectRow[]);
     })();
     return () => {
       cancelled = true;
@@ -126,29 +124,23 @@ export function FreelancerEditModal({ freelancer, onClose, onSave }: FreelancerE
           const path = `${freelancer.id}/proj-${projectId}-${Date.now()}-${i}.${ext}`;
           urls.push(await uploadPublicFile(f, path));
         }
-        const { error: puErr } = await localDb.from("projects").update({ images: urls }).eq("id", projectId);
-        if (puErr) throw puErr;
+        await updateProject(projectId, { images: urls });
       }
 
-      const { error } = await localDb
-        .from("freelancers")
-        .update({
-          name: form.name,
-          email: form.email,
-          whatsapp: form.whatsapp,
-          specialty: form.specialty,
-          bio: form.bio || null,
-          portfolio: form.portfolio || null,
-          linkedin: form.linkedin || null,
-          behance: form.behance || null,
-          github: form.github || null,
-          status: form.status,
-          profile_image: profileImageUrl,
-          portfolio_images: portfolioImagesUrl,
-        })
-        .eq("id", freelancer.id);
-
-      if (error) throw error;
+      await updateFreelancer(freelancer.id, {
+        name: form.name,
+        email: form.email,
+        whatsapp: form.whatsapp,
+        specialty: form.specialty,
+        bio: form.bio || null,
+        portfolio: form.portfolio || null,
+        linkedin: form.linkedin || null,
+        behance: form.behance || null,
+        github: form.github || null,
+        status: form.status,
+        profile_image: profileImageUrl,
+        portfolio_images: portfolioImagesUrl,
+      });
       toast.success("Freelancer updated successfully!");
       onSave();
       onClose();

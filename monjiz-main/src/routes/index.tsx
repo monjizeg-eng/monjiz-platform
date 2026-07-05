@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import heroImg from "@/assets/hero-freelancers.jpg";
 import { useEffect, useState } from "react";
-import { localDb, PLACEHOLDER_FREELANCERS } from "@/integrations/data/client";
+import { listFreelancersAll } from "@/integrations/data/vercel-api-client";
+import { PLACEHOLDER_FREELANCERS } from "@/integrations/data/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -43,15 +44,13 @@ function Index() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await localDb
-        .from("freelancers")
-        .select("id,name,specialty,bio,profile_image")
-        .eq("status", "active")
-        .not("bio", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(3);
-      const rows = (data ?? []) as Talent[];
-      setTalents(rows.length ? rows : PLACEHOLDER_FREELANCERS.slice(0, 3));
+      try {
+        const data = await listFreelancersAll();
+        const rows = data.filter((f: any) => f.status === "active" && f.bio).slice(0, 3) as Talent[];
+        setTalents(rows.length ? rows : PLACEHOLDER_FREELANCERS.slice(0, 3));
+      } catch (error) {
+        setTalents(PLACEHOLDER_FREELANCERS.slice(0, 3));
+      }
     })();
   }, []);
 
@@ -68,25 +67,22 @@ function Index() {
           height={1024}
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-primary/70" />
-        <div className="absolute inset-0 opacity-[0.06] pointer-events-none"
-             style={{ backgroundImage: "linear-gradient(var(--ink) 1px, transparent 1px), linear-gradient(90deg, var(--ink) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-        <div className="container-mz relative py-24 sm:py-36 text-primary-foreground">
-          <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary-foreground/10 backdrop-blur border border-primary-foreground/20 text-xs uppercase tracking-widest mb-8">
-              <span className="h-1.5 w-1.5 bg-primary-foreground rounded-full" /> Made in Egypt · صُنع في مصر
-            </div>
-            <h1 dir="rtl" className="font-black text-4xl sm:text-6xl leading-[1.1] mb-10">
-              اختار أحسن المنجزين <br/>
-              لإنجاز أعمالك عن بُعد
+        <div className="absolute inset-0 bg-black/65" />
+        <div className="container-mz relative py-24 sm:py-36">
+          <div className="max-w-4xl">
+            <div className="text-xs uppercase tracking-[0.35em] text-white/70 mb-4">monjiz</div>
+            <h1 className="font-black text-5xl sm:text-6xl leading-[1.03] text-white max-w-3xl">
+              Hire elite freelancers for faster, local work in Egypt.
             </h1>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link to="/marketplace" className="group inline-flex items-center justify-center gap-2 px-6 py-4 bg-primary-foreground text-primary font-medium hover:opacity-90 transition">
-                Request a Task
-                <span className="transition-transform group-hover:translate-x-1">→</span>
+            <p className="mt-6 max-w-2xl text-sm text-white/75">
+              Connect with vetted designers, developers, and business support specialists ready to deliver high-quality results on your terms.
+            </p>
+            <div className="mt-10 flex flex-col sm:flex-row gap-3">
+              <Link to="/marketplace" className="inline-flex items-center justify-center px-6 py-4 bg-secondary/15 text-primary font-semibold border border-secondary/20 hover:bg-secondary/20 transition hover:-translate-y-0.5">
+                Explore freelancers
               </Link>
-              <Link to="/signup" className="inline-flex items-center justify-center gap-2 px-6 py-4 bg-transparent border border-primary-foreground text-primary-foreground font-medium hover:bg-primary-foreground/10 transition">
-                Join as a Freelancer
+              <Link to="/signup" className="inline-flex items-center justify-center px-6 py-4 border border-primary text-primary bg-transparent font-semibold hover:bg-secondary/10 transition">
+                join as a freelancer
               </Link>
             </div>
           </div>
@@ -94,50 +90,47 @@ function Index() {
       </section>
 
       {/* POPULAR SERVICES / CATEGORIES */}
-      <section className="container-mz py-24">
+      <section className="container-mz py-24 bg-secondary/10">
         <div className="flex items-end justify-between mb-12 gap-6 flex-wrap">
           <div>
-            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">01 — Popular Services</div>
-            <h2 className="text-3xl sm:text-4xl font-black">Our freelancers will take it from here</h2>
+            <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">popular services</div>
+            <h2 className="text-3xl sm:text-4xl font-black">The services clients need most</h2>
           </div>
           <div dir="rtl" className="text-muted-foreground text-lg">الخدمات الأكثر طلبًا</div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border border border-border">
-          {categories.map((s, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+          {categories.map((s) => (
             <Link
               key={s.en}
               to="/marketplace"
               search={{ specialty: s.key }}
-              className="bg-background p-8 hover:bg-secondary transition-colors group block"
+              className="group block bg-primary text-white border border-primary/20 p-8 text-center hover:-translate-y-0.5 hover:bg-primary/95 hover:shadow-[0_15px_40px_-30px_rgba(0,0,0,0.45)] transition"
             >
-              <div className="text-xs text-muted-foreground mb-8">0{i + 1}</div>
-              <div className="text-xl font-bold mb-2 group-hover:underline underline-offset-4">{s.en}</div>
-              <div dir="rtl" className="text-muted-foreground">{s.ar}</div>
-              <div className="text-xs uppercase tracking-widest text-primary mt-6 opacity-0 group-hover:opacity-100 transition-opacity">Available tasks →</div>
+              <div className="mb-4 h-12 w-12 mx-auto flex items-center justify-center rounded-full bg-white/10 text-white text-xl">•</div>
+              <div className="text-lg font-bold mb-2">{s.en}</div>
+              <div dir="rtl" className="text-sm text-white/75">{s.ar}</div>
             </Link>
           ))}
         </div>
-        <div className="mt-8 flex flex-wrap gap-3">
-          <Link to="/marketplace" className="px-5 py-3 border border-border text-sm hover:bg-secondary">Request a specific task →</Link>
-          <Link to="/marketplace" className="px-5 py-3 border border-border text-sm hover:bg-secondary">Browse available tasks →</Link>
+        <div className="mt-10">
+          <Link to="/marketplace" className="inline-flex items-center justify-center px-8 py-3 bg-primary text-white border border-primary font-medium uppercase tracking-[0.15em] hover:bg-primary/90 transition">
+            Explore services
+          </Link>
         </div>
       </section>
 
       {/* TOP FREELANCERS */}
       {talents.length > 0 && (
-        <section className="border-y border-border bg-secondary/40">
-          <div className="container-mz py-24">
-            <div className="flex items-end justify-between mb-12 flex-wrap gap-6">
-              <div>
-                <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">02 — Roster</div>
-                <h2 className="text-3xl sm:text-4xl font-black">Our top freelancers</h2>
-              </div>
-              <Link to="/marketplace" className="text-sm underline underline-offset-4">View all →</Link>
+        <section className="bg-secondary/10 text-primary py-24">
+          <div className="container-mz">
+            <div className="text-center mb-12">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">Our top freelancers</div>
+              <h2 className="text-5xl sm:text-6xl font-black">Our top freelancers</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {talents.map((t) => (
-                <Link key={t.id} to="/freelancer/$id" params={{ id: t.id }} className="bg-background border border-border group flex flex-col">
-                  <div className="aspect-[4/3] bg-secondary overflow-hidden">
+                <Link key={t.id} to="/freelancer/$id" params={{ id: t.id }} className="bg-white border border-secondary/20 group flex flex-col overflow-hidden transition-transform hover:-translate-y-1 hover:shadow-[0_20px_35px_-30px_rgba(48,48,51,0.45)]">
+                  <div className="aspect-[4/3] bg-secondary/10 overflow-hidden">
                     {t.profile_image ? (
                       <img src={t.profile_image} alt={t.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     ) : (
@@ -147,9 +140,9 @@ function Index() {
                     )}
                   </div>
                   <div className="p-6">
-                    <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">{t.specialty}</div>
-                    <h3 className="text-xl font-bold mb-2">{t.name}</h3>
-                    {t.bio && <p className="text-sm text-muted-foreground line-clamp-2">{t.bio}</p>}
+                    <div className="text-sm uppercase tracking-[0.2em] text-secondary mb-1">{t.specialty}</div>
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-2 text-primary">{t.name}</h3>
+                    {t.bio && <p className="text-base text-muted-foreground line-clamp-2">{t.bio}</p>}
                   </div>
                 </Link>
               ))}
@@ -159,7 +152,7 @@ function Index() {
       )}
 
       {/* HOW IT WORKS */}
-      <section className="container-mz py-24">
+      <section className="container-mz py-24 bg-secondary/10">
         <div className="mb-12">
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-3">03 — How It Works</div>
           <h2 className="text-3xl sm:text-4xl font-black">Three steps, no friction</h2>
@@ -219,7 +212,7 @@ function Index() {
       </section>
 
       {/* READY CTA */}
-      <section className="border-y border-border" style={{ background: "var(--gradient-warm)" }}>
+      <section className="border-y border-border bg-background">
         <div className="container-mz py-24 text-center">
           <h2 className="text-4xl sm:text-5xl font-black mb-4">Ready to get things done?</h2>
           <p dir="rtl" className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">

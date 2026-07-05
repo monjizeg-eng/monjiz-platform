@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { localDb } from "@/integrations/data/client";
+import { deleteFreelancer, updateFreelancer } from "@/integrations/data/vercel-api-client";
 import { toast } from "sonner";
 import { FreelancerEditModal } from "./FreelancerEditModal";
 
@@ -43,8 +43,7 @@ export function FreelancerManagementTable({
 
     setDeleting(id);
     try {
-      const { error } = await localDb.from("freelancers").delete().eq("id", id);
-      if (error) throw error;
+      await deleteFreelancer(id);
       toast.success("Freelancer deleted successfully");
       onUpdate();
     } catch (error: any) {
@@ -60,11 +59,7 @@ export function FreelancerManagementTable({
     }
 
     try {
-      const { error } = await localDb
-        .from("freelancers")
-        .update({ status: "banned" })
-        .eq("id", id);
-      if (error) throw error;
+      await updateFreelancer(id, { status: "banned" });
       toast.success("Freelancer banned successfully");
       onUpdate();
     } catch (error: any) {

@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { localDb } from "@/integrations/data/client";
+import { insertFreelancer } from "@/integrations/data/vercel-api-client";
+import { supabase } from "@/integrations/supabase-client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { toast } from "sonner";
@@ -70,9 +71,10 @@ function SignupPage() {
   const uploadFile = async (userId: string, file: File, kind: "headshot" | "portfolio", idx?: number) => {
     const ext = file.name.split(".").pop() || "jpg";
     const path = `${userId}/${kind}-${Date.now()}-${idx ?? 0}.${ext}`;
-    const { error } = await localDb.storage.from("freelancer-media").upload(path, file, { upsert: true });
+    const { error } = await supabase.storage.from("freelancer-media").upload(path, file, { upsert: true });
     if (error) throw error;
-    return localDb.storage.from("freelancer-media").getPublicUrl(path).data.publicUrl;
+    const { data } = supabase.storage.from("freelancer-media").getPublicUrl(path);
+    return data.publicUrl;
   };
 
   const submit = async () => {
@@ -84,20 +86,23 @@ function SignupPage() {
     }
     setLoading(true);
     try {
-      const { data: auth, error } = await localDb.auth.signUp({
-        email: data.email, password: data.password,
-        options: { emailRedirectTo: window.location.origin + "/dashboard" },
+      // Sign up with Supabase directly
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: data.email.trim(),
+        password: data.password,
       });
-      if (error) throw error;
-      const userId = auth.user?.id;
+
+      if (signUpError) throw signUpError;
+
+      const userId = authData.user?.id;
       if (!userId) {
         throw new Error("Could not create your account. Please try again.");
       }
 
-      const { data: { session } } = await localDb.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        const { error: signInError } = await localDb.auth.signInWithPassword({
-          email: data.email,
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: data.email.trim(),
           password: data.password,
         });
         if (signInError) {
@@ -117,7 +122,7 @@ function SignupPage() {
         portfolioUrls.push(url);
       }
 
-      const { error: insErr } = await localDb.from("freelancers").insert({
+      await insertFreelancer({
         user_id: userId,
         name: data.name,
         email: data.email,
@@ -132,9 +137,8 @@ function SignupPage() {
         github: data.github || null,
         status: "pending",
       });
-      if (insErr) throw insErr;
 
-      toast.success("Welcome to Monjiz!");
+      toast.success("Welcome to Monjiz! Your profile is pending approval.");
       navigate({ to: "/dashboard" });
     } catch (e: any) {
       toast.error(e.message ?? "Signup failed");
